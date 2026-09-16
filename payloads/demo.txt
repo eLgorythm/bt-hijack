@@ -1,0 +1,6 @@
+REM harmless test payload - type this to verify the HID link
+REM Usage: bthj ble-hid --script-file payloads/demo.txt
+STRING hello from bthj
+ENTER
+STRING if you can read this, the sink is live
+ENTER

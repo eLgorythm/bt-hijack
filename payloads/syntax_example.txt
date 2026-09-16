@@ -1,0 +1,28 @@
+REM ===== bthj payload syntax reference =====
+REM Lines that are not commands are typed as-is (STRING default).
+REM Plain text example line:
+echo from bthj
+REM Special keys (one per line or after modifiers):
+ENTER
+TAB
+BACKSPACE
+DELETE
+ESCAPE
+UPARROW
+DOWNARROW
+LEFTARROW
+RIGHTARROW
+CAPSLOCK
+F1
+REM Modifier combos - hold modifier(s) while pressing the key:
+WIN r
+CTRL C
+ALT TAB
+CTRL ALT DELETE
+GUI r
+REM Timing:
+DELAY 500
+REM Comments begin with REM.
+REM Env-style tokens get substituted from --var NAME=value:
+REM   e.g. --var ATTACKER_IP=10.0.0.5 -> {{ATTACKER_IP}}
+STRING demo token: {{ATTACKER_IP}}

