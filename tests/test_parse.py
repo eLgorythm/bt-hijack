@@ -1,6 +1,6 @@
 import json
 
-from bthj.bluez_cli import parse_devices, parse_scan_lines
+from bthj.bluez_cli import parse_devices, parse_known_devices, parse_scan_lines
 from bthj.hid_ble import (
     MOD_ALT,
     MOD_CTRL,
@@ -30,6 +30,27 @@ def test_parse_scan_nonew_lines():
     assert d.rssi == -42
     assert devices[1].name is None
     assert devices[1].rssi == -70
+
+
+def test_parse_known_devices():
+    text = (
+        "Device AA:BB:CC:DD:EE:FF PAS 8C28\n"
+        "Device 11:22:33:44:55:66\n"
+        "[CHG] Device AA:BB:CC:DD:EE:66 RSSI: -50\n"
+    )
+    known = parse_known_devices(text)
+    assert len(known) == 2
+    assert known[0].address == "AA:BB:CC:DD:EE:FF"
+    assert known[0].name == "PAS 8C28"
+    assert known[1].name is None
+    assert known[1].rssi is None
+
+
+def test_parse_known_devices_connected_flag_not_name():
+    known = parse_known_devices("Device AA:BB:CC:DD:EE:FF Connected\n")
+    assert len(known) == 1
+    assert known[0].address == "AA:BB:CC:DD:EE:FF"
+    assert known[0].name is None
 
 
 def test_rssi_hex_parens():
