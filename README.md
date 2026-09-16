@@ -92,6 +92,22 @@ ENTER
 Ready-to-use payloads in `payloads/`: `demo`, `shell`, `beacon`, `exfil`,
 `lockout`, `persist`, `syntax_example`.
 
+## Interactive menu
+
+Run `main.py` for a guided menu (no CLI arguments needed):
+
+```bash
+python main.py          # or ./main.py
+```
+
+The menu lets you:
+
+1. Scan / probe / recon / inject / impersonate / spoof via interactive prompts
+2. Add `{{TOKEN}}` variable substitutions when prompted
+3. Run any `bthj` command directly by choosing option 9 and typing the argument string (e.g. `rfcomm AA:BB:CC:DD:EE:FF --channels 1-10`)
+
+All input goes through the same `bthj.cli.main()` engine — results, `--out` reports, and exit codes work identically.
+
 ## Commands
 
 | Command | Purpose |
@@ -111,6 +127,7 @@ Common flags: `--json`, `--out REPORT.json`.
 ## Architecture
 
 ```
+main.py       interactive menu frontend (prompts -> argv -> bthj.cli)
 bthj/
   cli.py        argparse CLI + report pipeline (events, --out, timestamps)
   hal.py        backend ABC; SimBackend (offline) + get_backend()
