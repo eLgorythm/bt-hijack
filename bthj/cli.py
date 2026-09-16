@@ -5,12 +5,15 @@ import json
 import sys
 import time
 
-from bthj import __version__
+from bthj import TOOL_NAME, __author__, __version__
 from bthj.hal import BackendError, UnsupportedBackend, get_backend
 from bthj.jam import ubertooth_check
 from bthj.models import AttackSuggestion, Device, Profile, Report
 from bthj.profiler import profile_device, suggest_attacks
 from bthj.spoof import KEYBOARD_CLASS, MOUSE_CLASS, spoof_class, spoof_name
+
+BANNER = f"{TOOL_NAME} {__version__} \u2014 {__author__}: Bluetooth hijacking framework (red-team)"
+REPORT_SOURCE = f"{TOOL_NAME}/{__version__} ({__author__})"
 
 
 def _render_device(dev: Device) -> str:
@@ -63,9 +66,12 @@ def _parse_channel_range(text: str) -> list[int]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="bthj",
-        description="Bluetooth hijacking framework (red-team). BleuZ backend by default.",
+        description=f"{BANNER} BleuZ backend by default.",
     )
-    parser.add_argument("--version", action="version", version=__version__)
+    parser.add_argument(
+        "--version", action="version",
+        version=f"{TOOL_NAME} {__version__} \u2014 {__author__}",
+    )
     parser.add_argument(
         "--backend",
         choices=["bluez", "sim"],
@@ -169,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"bthj: {exc}", file=sys.stderr)
         return 2
 
-    report = _report(source=f"bthj/{__version__}", cmd=args.cmd, arguments=vars(args))
+    report = _report(source=REPORT_SOURCE, cmd=args.cmd, arguments=vars(args))
 
     def log(level: str, msg: str, **kw):
         report.add_event(level, msg, **kw)

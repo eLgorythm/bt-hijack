@@ -1,5 +1,7 @@
 # bt-hijack
 
+**v0.2.0** — by **0xfndLabs** (`bthj --version`)
+
 Red-team Bluetooth hijacking framework for **BR/EDR + BLE**, driven through the
 host BlueZ stack from a plain Linux laptop. No extra USB dongles required for the
 host-level attack paths.

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from bthj import TOOL_NAME, __author__, __version__
 from bthj.cli import main as cli_main
 
 MENU = [
@@ -21,7 +22,7 @@ MENU = [
 def _print_menu() -> None:
     print()
     print("=" * 50)
-    print(" bt-hijack — interactive menu")
+    print(f" {TOOL_NAME} {__version__} — {__author__}: interactive menu")
     print("=" * 50)
     for i, label in enumerate(MENU, start=1):
         print(f"  {i:>2}. {label}")
