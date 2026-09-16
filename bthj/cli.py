@@ -167,6 +167,24 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("doctor", parents=[common],
                    help="diagnose host readiness and runbook for a real engagement")
 
+    from bthj.audio import CONTROL_METHODS
+
+    p_audio = sub.add_parser("audio", parents=[common],
+                             help="speaker hijack: A2DP blast + AVRCP control via host audio stack")
+    p_audio.add_argument("target", help="target BD_ADDR (speaker)")
+    p_audio.add_argument("--probe", action="store_true",
+                         help="report connection, transports, AVRCP players, sink")
+    p_audio.add_argument("--blast", nargs="?", const="-", metavar="WAV",
+                         help="stream audio to speaker (default: synthesized tone)")
+    p_audio.add_argument("--seconds", type=float, default=5.0,
+                         help="tone length (s) when no file given (default 5)")
+    p_audio.add_argument("--volume", type=int, default=100,
+                         help="sink volume in %% on target (default 100)")
+    p_audio.add_argument("--repeat", type=int, default=1,
+                         help="play the audio N times (default 1)")
+    p_audio.add_argument("--control", choices=list(CONTROL_METHODS),
+                         help="AVRCP remote control (needs BlueZ MediaPlayer1; often unsupported)")
+
     args = parser.parse_args(argv)
 
     try:
@@ -481,6 +499,67 @@ def main(argv: list[str] | None = None) -> int:
             report.artifacts = [json.dumps(checks, indent=2)]
             log("info", "doctor report generated")
             _emit(args, report, lines=lines)
+
+        elif args.cmd == "audio":
+            from bthj import audio as audio_mod
+
+            if args.probe:
+                info = audio_mod.probe(args.target)
+                lines = [
+                    f"  target: {info['address']}",
+                    f"  connected: {info['connected']}",
+                    f"  name: {info['name'] or '?'}",
+                    f"  class: {info['class'] or '?'}",
+                    f"  sink: {info['sink'] or 'none'}",
+                    f"  tools: {json.dumps(info['tools'])}",
+                ]
+                lines += [
+                    f"  transport {t['path']}: uuid={t.get('uuid')} "
+                    f"state={t.get('state')} codec={t.get('codec')}"
+                    for t in info["transports"]
+                ]
+                lines += [
+                    f"  player: status={p.get('status')} volume={p.get('volume')} "
+                    f"name={p.get('name')}"
+                    for p in info["players"]
+                ]
+                if not info["transports"] and not info["players"]:
+                    lines.append("  (no media objects yet — run --blast to build a transport)")
+                report.artifacts.append(json.dumps(info, indent=2))
+                log("info", "audio probe done")
+                _emit(args, report, lines=lines, payload=info)
+            elif args.control:
+                result = audio_mod.control(args.target, args.control)
+                lines = [
+                    "  " + f"AVRCP {args.control} -> {args.target}: "
+                    + f"player={result['player']} ok={result['ok']}"
+                ]
+                report.artifacts.append(json.dumps(result, indent=2))
+                log("info", f"avrcp {args.control} sent")
+                _emit(args, report, lines=lines, payload=result)
+            elif args.blast is not None:
+                audio_mod.connect(args.target)
+                result = audio_mod.blast(
+                    args.target,
+                    wav_path=None if args.blast == "-" else args.blast,
+                    seconds=args.seconds,
+                    volume=args.volume,
+                    repeat=args.repeat,
+                )
+                lines = [
+                    "  " + f"blasted {result['repeat']}x '{result['file']}' "
+                    + f"to {result['target']} at {result['volume']}%"
+                ]
+                report.artifacts.append(json.dumps(result, indent=2))
+                log("info", f"audio blast completed ({result['file']})")
+                _emit(args, report, lines=lines, payload=result)
+            else:
+                print(
+                    "bthj audio: nothing to do — use --probe, --blast <WAV>, "
+                    "or --control {play,pause,stop,next,previous}",
+                    file=sys.stderr,
+                )
+                return 2
 
         else:
             raise NotImplementedError(f"command {args.cmd} not wired")

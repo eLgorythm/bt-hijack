@@ -21,6 +21,8 @@ host-level attack paths.
 | BLE HID keystroke injection (GATT keyboard gadget + pairing agent) | `bthj ble-hid` | working (live-tested on host) |
 | Identity clone / spoofing (name + Device Class) | `bthj impersonate`, `bthj spoof` | working (class needs root) |
 | Reconnect bait: re-fire payload on every re-association | `bthj impersonate --loop` | working |
+| Speaker hijack: A2DP audio blast + volume on A2DP-sink speakers | `bthj audio <BD_ADDR> --blast` | working (host audio: BlueZ A2DP source + PipeWire/Pulse) |
+| AVRCP remote control (play/pause/next/volume) | `bthj audio <BD_ADDR> --control play` | partial — needs BlueZ `MediaPlayer1` (Controller role; often not exported) |
 | KNOB exploit / jamming / packet race | – | **stub** (needs Ubertooth/nRF radio) |
 | Classic HID profile server (report over L2CAP PSM 17/19) | – | recon only (probe side live, profile server stubbed) |
 | BD_ADDR cloning / silent reconnect via LTK | – | not possible on host BlueZ |
@@ -125,6 +127,7 @@ All input goes through the same `bthj.cli.main()` engine — results, `--out` re
 | `ble-hid` | BLE HID injection gadget (`--script`, `--script-file`, `--var`, `--loop`) |
 | `impersonate` / `clone` | clone identity + fire payload (reconnect bait) |
 | `rfcomm` / `sweep` ` <BD_ADDR>` | classic recon: channel sweep + SDP + HIDP PSMs |
+| `audio <BD_ADDR>` | speaker hijack: `--probe`, `--blast [WAV]`, `--volume %`, `--control play/pause/…` (`--blast` uses host A2DP source + `pw-play`/`pactl`) |
 | `self-test` | tooling + controller posture |
 | `doctor` | readiness checks + runbook |
 

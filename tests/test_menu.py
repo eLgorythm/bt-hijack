@@ -84,6 +84,26 @@ def test_pass_through_blank(fake_input):
     assert menu._dispatch(9) is None
 
 
+def test_audio_probe_menu(fake_input):
+    fake_input(["00:31:A7:19:51:1E", "probe"])
+    assert menu._dispatch(10) == [
+        "--backend", "bluez", "audio", "00:31:A7:19:51:1E", "--probe",
+    ]
+
+
+def test_audio_blast_menu(fake_input):
+    fake_input(["00:31:A7:19:51:1E", "blast", "5", "100"])
+    assert menu._dispatch(10) == [
+        "--backend", "bluez", "audio", "00:31:A7:19:51:1E",
+        "--blast", "--seconds", "5", "--volume", "100",
+    ]
+
+
+def test_audio_blank_addr(fake_input):
+    fake_input([""])
+    assert menu._dispatch(10) == []
+
+
 def test_loop_invokes_engine(fake_input, tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr(menu, "cli_main", lambda argv: calls.append(argv) or 0)

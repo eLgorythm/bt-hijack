@@ -40,6 +40,7 @@ MENU = [
     "Info / Self-test",
     "Doctor (readiness)",
     "Run free CLI command",
+    "Audio hijack (speaker)",
 ]
 
 GROUPS = [
@@ -52,6 +53,7 @@ GROUPS = [
         ("4", "BLE HID", "keystroke injection via GATT keyboard gadget"),
         ("5", "Impersonate", "clone target identity + fire HID payload"),
         ("6", "Spoof", "change adapter name / Device Class"),
+        ("10", "Audio hijack", "blast audio / control a speaker (A2DP + AVRCP)"),
     ]),
     ("UTILITY", [
         ("7", "Self-test", "check tooling + controller posture"),
@@ -264,6 +266,28 @@ def _prompt_vars(argv: list[str]) -> list[str]:
     return argv
 
 
+def _prompt_audio() -> list[str]:
+    addr = _ask("Target BD_ADDR (speaker)")
+    if not addr:
+        return []
+    from bthj.audio import CONTROL_METHODS
+
+    action = _ask(
+        "Action: probe / blast / " + "/".join(sorted(CONTROL_METHODS)) + " [probe]",
+        "probe",
+    ).strip().lower()
+    argv = ["--backend", "bluez", "audio", addr]
+    if action in CONTROL_METHODS:
+        argv += ["--control", action]
+    elif action in ("blast", "play-audio", "audio"):
+        seconds = _ask("Tone length (seconds)", "5")
+        vol = _ask("Volume % (0-150)", "100")
+        argv += ["--blast", "--seconds", seconds, "--volume", vol]
+    else:
+        argv.append("--probe")
+    return argv
+
+
 def _dispatch(choice: int) -> list[str] | None:
     if choice == 1:
         return _prompt_scan()
@@ -280,6 +304,8 @@ def _dispatch(choice: int) -> list[str] | None:
     if choice in (7, 8):
         sub = "self-test" if choice == 7 else "doctor"
         return ["--backend", "bluez", sub]
+    if choice == 10:
+        return _prompt_audio()
     if choice == 9:
         raw = _ask("Enter bthj command + args (e.g. scan --timeout 10)")
         return ["--backend", "bluez"] + raw.split() if raw else None
