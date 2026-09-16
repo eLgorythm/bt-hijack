@@ -105,8 +105,12 @@ python main.py          # or ./main.py
 The menu lets you:
 
 1. Scan / probe / recon / inject / impersonate / spoof via interactive prompts
-2. Add `{{TOKEN}}` variable substitutions when prompted
-3. Run any `bthj` command directly by choosing option 9 and typing the argument string (e.g. `rfcomm AA:BB:CC:DD:EE:FF --channels 1-10`)
+2. Pick a payload from the bundled `payloads/*.txt` list by number
+3. Add `{{TOKEN}}` variable substitutions when prompted
+4. Run any `bthj` command directly by choosing option 9 and typing the argument string (e.g. `rfcomm AA:BB:CC:DD:EE:FF --channels 1-10`)
+
+The menu shows live adapter status (address, name, class, powered) and uses
+color-coded, grouped sections; colors descend gracefully when stdout is not a TTY.
 
 All input goes through the same `bthj.cli.main()` engine — results, `--out` reports, and exit codes work identically.
 
