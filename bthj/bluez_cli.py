@@ -120,6 +120,21 @@ def _clean_line(ln: str) -> str:
     return _ANSI.sub("", ln).strip()
 
 
+def _parse_rssi(raw: str) -> int | None:
+    raw = raw.strip()
+    m = re.search(r"\((-?\d+)\)", raw)
+    if m:
+        return int(m.group(1))
+    m = re.match(r"^0x[0-9a-fA-F]+$", raw)
+    if m:
+        val = int(raw, 16)
+        return val - 256 if val > 127 else val
+    try:
+        return int(raw)
+    except ValueError:
+        return None
+
+
 def parse_scan_lines(text: str) -> list[Device]:
     index: dict[str, Device] = {}
     order: list[str] = []
@@ -140,7 +155,9 @@ def parse_scan_lines(text: str) -> list[Device]:
         if rest.isdigit():
             continue
         if rest.startswith("RSSI:"):
-            dev.rssi = int(rest.split(":", 1)[1].strip())
+            rssi = _parse_rssi(rest.split(":", 1)[1])
+            if rssi is not None:
+                dev.rssi = rssi
         elif rest.startswith("Name:"):
             dev.name = rest.split(":", 1)[1].strip()
         elif rest.startswith("Class:"):
@@ -184,7 +201,9 @@ def _parse_device_block(block: str) -> Device:
         if key == "Name":
             dev.name = val
         elif key == "RSSI":
-            dev.rssi = int(val)
+            rssi = _parse_rssi(val)
+            if rssi is not None:
+                dev.rssi = rssi
         elif key == "Class":
             try:
                 dev.device_class = int(val, 16)

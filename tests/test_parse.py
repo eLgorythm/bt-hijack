@@ -32,6 +32,23 @@ def test_parse_scan_nonew_lines():
     assert devices[1].rssi == -70
 
 
+def test_rssi_hex_parens():
+    text = "[CHG] Device AA:BB:CC:DD:EE:FF RSSI: 0xffffffcd (-51)\n"
+    devices = parse_scan_lines(text)
+    assert len(devices) == 1
+    assert devices[0].rssi == -51
+
+
+def test_parse_devices_rssi_hex():
+    text = (
+        "Device AA:BB:CC:DD:EE:FF [public]\n"
+        "  Name: Logitech MX Keys\n"
+        "  RSSI: 0xffffffcd (-51)\n"
+    )
+    devices = parse_devices(text)
+    assert devices and devices[0].rssi == -51
+
+
 def test_parse_info_blocks():
     text = (
         "Device AA:BB:CC:DD:EE:FF [public]\n"
