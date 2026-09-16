@@ -68,10 +68,10 @@ def _controller_status() -> dict | None:
     if _ADAPTER_STATUS is not None:
         return _ADAPTER_STATUS
     try:
-        from bthj.bluez_cli import controller_info
+        from bthj.hal import UnsupportedBackend, get_backend
 
-        _ADAPTER_STATUS = controller_info()
-    except (BackendError, OSError, RuntimeError):
+        _ADAPTER_STATUS = get_backend("bluez").controller_info()
+    except (BackendError, UnsupportedBackend, OSError, RuntimeError):
         _ADAPTER_STATUS = {}
     return _ADAPTER_STATUS
 
