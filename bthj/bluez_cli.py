@@ -100,11 +100,6 @@ _ENDPOINT = re.compile(
     r"^Device\s+(?P<addr>[0-9A-F]{2}(?::[0-9A-F]{2}){5})\s*\[(?P<transport>\w+)\]"
 )
 
-_KNOWN_LINE = re.compile(
-    r"^Device\s+(?P<addr>[0-9A-F]{2}(?::[0-9A-F]{2}){5})"
-    r"(?:\s+(?P<rest>.*))?$"
-)
-
 
 def _parse_scan_block(block: str) -> Device | None:
     m = _SCAN_LINE.match(block)
@@ -175,25 +170,6 @@ def parse_scan_lines(text: str) -> list[Device]:
     for addr in order:
         index[addr].addr_type = "public" if ":" in index[addr].address else "random"
     return [index[a] for a in order]
-
-
-def parse_known_devices(text: str) -> list[Device]:
-    results: list[Device] = []
-    seen: set[str] = set()
-    for ln in text.splitlines():
-        m = _KNOWN_LINE.match(_clean_line(ln))
-        if not m:
-            continue
-        addr = m.group("addr")
-        if addr in seen:
-            continue
-        seen.add(addr)
-        rest = (m.group("rest") or "").strip()
-        dev = Device(address=addr, addr_type="public")
-        if rest and rest.split()[0].lower() != "connected":
-            dev.name = rest
-        results.append(dev)
-    return results
 
 
 def parse_devices(text: str) -> list[Device]:
@@ -337,12 +313,7 @@ class BluezCLIBackend(Backend):
             [self._ctl, *flags, "scan", "off" if passive else "on"],
             timeout=int(timeout) + 15,
         )
-        found = parse_devices(out)
-        known = parse_known_devices(_run([self._ctl, "devices"], timeout=15))
-        merged = {d.address: d for d in found}
-        for d in known:
-            merged.setdefault(d.address, d)
-        return list(merged.values())
+        return parse_devices(out)
 
     def set_name(self, name: str) -> None:
         _run([self._ctl, "system-alias", name])
