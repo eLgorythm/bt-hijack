@@ -283,6 +283,8 @@ def _prompt_audio() -> list[str]:
         seconds = _ask("Tone length (seconds)", "5")
         vol = _ask("Volume % (0-150)", "100")
         argv += ["--blast", "--seconds", seconds, "--volume", vol]
+        if _ask_bool("Repeat rounds until Ctrl+C?", False):
+            argv += ["--loop", "--every", _ask("Interval between rounds (s)", "30")]
     else:
         argv.append("--probe")
     return argv

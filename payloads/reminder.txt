@@ -1,0 +1,20 @@
+REM 0xfndLabs reminder popup — Windows target by default
+REM On Android launchers, use: GUI then start typing (launcher search),
+REM or adapt STRING lines to a text field in the foreground app.
+GUI r
+DELAY 700
+STRING notepad
+ENTER
+DELAY 1500
+STRING 0xfndLabs red-team test
+ENTER
+STRING Isolate this device now: disconnect from sensitive nets
+ENTER
+STRING Sweep + lock DB, then re-run the check.
+ENTER
+REM close notepad
+ALT f
+DELAY 300
+STRING x
+DELAY 300
+ENTER

@@ -177,6 +177,31 @@ def blast(addr: str, wav_path: str | None = None, seconds: float = 5.0,
     return {"target": addr, "file": source, "repeat": repeat, "volume": volume}
 
 
+def blast_loop(addr: str, wav_path: str | None = None, seconds: float = 5.0,
+               volume: int = 100, repeat: int = 1, every: float = 30.0,
+               rounds: int | None = None, shell=local_run, wait: float = 30.0) -> dict:
+    source = wav_path
+    cleanup: Path | None = None
+    if source is None or source == "-":
+        cleanup = Path(f"/tmp/bthj_blast_{_norm(addr)}.wav")
+        synth_tone(str(cleanup), seconds)
+        source = str(cleanup)
+    fired = 0
+    try:
+        while rounds is None or fired < rounds:
+            blast(addr, wav_path=source, seconds=seconds, volume=volume,
+                  repeat=repeat, shell=shell, wait=wait)
+            fired += 1
+            if rounds is None or fired < rounds:
+                time.sleep(max(0.0, every))
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if cleanup is not None:
+            cleanup.unlink(missing_ok=True)
+    return {"target": addr, "file": source, "rounds": fired, "volume": volume}
+
+
 async def _scan_bluez() -> dict:
     bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
     try:

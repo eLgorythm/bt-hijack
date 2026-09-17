@@ -182,6 +182,10 @@ def main(argv: list[str] | None = None) -> int:
                          help="sink volume in %% on target (default 100)")
     p_audio.add_argument("--repeat", type=int, default=1,
                          help="play the audio N times (default 1)")
+    p_audio.add_argument("--loop", action="store_true",
+                         help="repeat blast rounds until Ctrl+C")
+    p_audio.add_argument("--every", type=float, default=30.0,
+                         help="seconds between --loop rounds (default 30)")
     p_audio.add_argument("--control", choices=list(CONTROL_METHODS),
                          help="AVRCP remote control (needs BlueZ MediaPlayer1; often unsupported)")
 
@@ -539,17 +543,33 @@ def main(argv: list[str] | None = None) -> int:
                 _emit(args, report, lines=lines, payload=result)
             elif args.blast is not None:
                 audio_mod.connect(args.target)
-                result = audio_mod.blast(
-                    args.target,
-                    wav_path=None if args.blast == "-" else args.blast,
-                    seconds=args.seconds,
-                    volume=args.volume,
-                    repeat=args.repeat,
-                )
-                lines = [
-                    "  " + f"blasted {result['repeat']}x '{result['file']}' "
-                    + f"to {result['target']} at {result['volume']}%"
-                ]
+                if args.loop:
+                    result = audio_mod.blast_loop(
+                        args.target,
+                        wav_path=None if args.blast == "-" else args.blast,
+                        seconds=args.seconds,
+                        volume=args.volume,
+                        repeat=args.repeat,
+                        every=args.every,
+                    )
+                    lines = [
+                        "  " + f"loop blast done: {result['rounds']} round(s) "
+                        + f"of {result['repeat']}x '{result['file']}' "
+                        + f"to {result['target']} at {result['volume']}%",
+                        "  (stopped via Ctrl+C or at last round)",
+                    ]
+                else:
+                    result = audio_mod.blast(
+                        args.target,
+                        wav_path=None if args.blast == "-" else args.blast,
+                        seconds=args.seconds,
+                        volume=args.volume,
+                        repeat=args.repeat,
+                    )
+                    lines = [
+                        "  " + f"blasted {result['repeat']}x '{result['file']}' "
+                        + f"to {result['target']} at {result['volume']}%"
+                    ]
                 report.artifacts.append(json.dumps(result, indent=2))
                 log("info", f"audio blast completed ({result['file']})")
                 _emit(args, report, lines=lines, payload=result)

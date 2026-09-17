@@ -22,6 +22,7 @@ host-level attack paths.
 | Identity clone / spoofing (name + Device Class) | `bthj impersonate`, `bthj spoof` | working (class needs root) |
 | Reconnect bait: re-fire payload on every re-association | `bthj impersonate --loop` | working |
 | Speaker hijack: A2DP audio blast + volume on A2DP-sink speakers | `bthj audio <BD_ADDR> --blast` | working (host audio: BlueZ A2DP source + PipeWire/Pulse) |
+| Periodic audio schedule (re-blast rounds until Ctrl+C) | `bthj audio <BD_ADDR> --blast --loop --every 30` | working |
 | AVRCP remote control (play/pause/next/volume) | `bthj audio <BD_ADDR> --control play` | partial — needs BlueZ `MediaPlayer1` (Controller role; often not exported) |
 | KNOB exploit / jamming / packet race | – | **stub** (needs Ubertooth/nRF radio) |
 | Classic HID profile server (report over L2CAP PSM 17/19) | – | recon only (probe side live, profile server stubbed) |
@@ -94,7 +95,7 @@ ENTER
   missing tokens are a hard error (exit code 2)
 
 Ready-to-use payloads in `payloads/`: `demo`, `shell`, `beacon`, `exfil`,
-`lockout`, `persist`, `syntax_example`.
+`lockout`, `persist`, `reminder`, `syntax_example`.
 
 ## Interactive menu
 
@@ -127,7 +128,7 @@ All input goes through the same `bthj.cli.main()` engine — results, `--out` re
 | `ble-hid` | BLE HID injection gadget (`--script`, `--script-file`, `--var`, `--loop`) |
 | `impersonate` / `clone` | clone identity + fire payload (reconnect bait) |
 | `rfcomm` / `sweep` ` <BD_ADDR>` | classic recon: channel sweep + SDP + HIDP PSMs |
-| `audio <BD_ADDR>` | speaker hijack: `--probe`, `--blast [WAV]`, `--volume %`, `--control play/pause/…` (`--blast` uses host A2DP source + `pw-play`/`pactl`) |
+| `audio <BD_ADDR>` | speaker hijack: `--probe`, `--blast [WAV]`, `--volume %`, `--loop --every N` (periodic rounds), `--control play/pause/…` (`--blast` uses host A2DP source + `pw-play`/`pactl`) |
 | `self-test` | tooling + controller posture |
 | `doctor` | readiness checks + runbook |
 

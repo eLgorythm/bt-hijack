@@ -99,6 +99,15 @@ def test_audio_blast_menu(fake_input):
     ]
 
 
+def test_audio_blast_loop_menu(fake_input):
+    fake_input(["00:31:A7:19:51:1E", "blast", "5", "100", "y", "30"])
+    assert menu._dispatch(10) == [
+        "--backend", "bluez", "audio", "00:31:A7:19:51:1E",
+        "--blast", "--seconds", "5", "--volume", "100",
+        "--loop", "--every", "30",
+    ]
+
+
 def test_audio_blank_addr(fake_input):
     fake_input([""])
     assert menu._dispatch(10) == []

@@ -131,3 +131,47 @@ def test_probe_shape_without_bluez(monkeypatch):
     assert info["address"] == "00:31:A7:19:51:1E"
     assert info["transports"] == []
     assert info["tools"] is not None
+
+
+def test_blast_loop_fires_rounds(monkeypatch):
+    fired: list[str] = []
+
+    def fake_blast(addr, **kw):
+        fired.append(addr)
+        return {"target": addr, "file": "x.wav", "rounds": 0, "volume": 50}
+
+    monkeypatch.setattr(audio, "blast", fake_blast)
+    monkeypatch.setattr(audio, "synth_tone", lambda p, seconds, freq=880.0: p)
+    monkeypatch.setattr(audio.time, "sleep", lambda s: None)
+    result = audio.blast_loop("00:31:A7:19:51:1E", wav_path="-", seconds=1.0,
+                              volume=50, every=5.0, rounds=3)
+    assert len(fired) == 3
+    assert result["rounds"] == 3
+
+
+def test_blast_loop_single_round_does_not_sleep(monkeypatch):
+    sleeps: list[float] = []
+    monkeypatch.setattr(audio, "blast", lambda addr, **kw: {"rounds": 0})
+    monkeypatch.setattr(audio, "synth_tone", lambda p, seconds, freq=880.0: p)
+    monkeypatch.setattr(audio.time, "sleep", lambda s: sleeps.append(s))
+    audio.blast_loop("00:31:A7:19:51:1E", wav_path="-", seconds=1.0,
+                     every=9.0, rounds=1)
+    assert sleeps == []
+
+
+def test_blast_loop_keyboard_interrupt_stops(monkeypatch):
+    fired = {"n": 0}
+
+    def fake_blast(addr, **kw):
+        fired["n"] += 1
+        if fired["n"] >= 2:
+            raise KeyboardInterrupt
+        return {"rounds": 0}
+
+    monkeypatch.setattr(audio, "blast", fake_blast)
+    monkeypatch.setattr(audio, "synth_tone", lambda p, seconds, freq=880.0: p)
+    monkeypatch.setattr(audio.time, "sleep", lambda s: None)
+    result = audio.blast_loop("00:31:A7:19:51:1E", wav_path="-", seconds=1.0,
+                              every=0.0)
+    assert fired["n"] == 2
+    assert result["rounds"] == 1
